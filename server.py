@@ -1,8 +1,16 @@
 from socket import *
 import sys
 import pickle
+import threading
 
 INPUT_NUM = 1
+
+msg_list = []
+
+TERMINATE = False
+
+server_socket = socket(AF_INET, SOCK_STREAM)
+server_socket.bind(('', 0))
 
 def find_socket(sock_type):
     '''Find a valid port number for socket
@@ -30,7 +38,7 @@ def transactionUDP(r_socket, r_port, msg_list):
     ret_code -- if the message from client is "GET", return 0;
                 if it's "TERMINATE", return -1; for others, return 1
     '''
-    
+
     message, client_address = r_socket.recvfrom(2048)
     msg = message.decode()
     ret_code = 0
@@ -48,17 +56,50 @@ def transactionUDP(r_socket, r_port, msg_list):
     
     return ret_code
 
+class ClientThread(threading.Thread):
+    def __init__(self, client_address, client_socket, req_code, server_address, n_port):
+        threading.Thread.__init__(self)
+        self.csocket = client_socket
+        self.req_code = req_code
+        self.client_address = client_address
+        self.server_address = server_address
+        self.n_port = n_port
+        print("New connection added: ", client_address)
+    def run(self):
+        msg = ''
+        cli_req_code = int(self.csocket.recv(1024).decode())
+        if cli_req_code != self.req_code:
+            self.csocket.send("0".encode())
+            self.csocket.close()
+            return
+        
+        r_socket = find_socket(SOCK_DGRAM)
+        r_port = r_socket.getsockname()[1]
+        print("r_port is {0}".format(r_port))
+        self.csocket.send(str(r_port).encode())
+        self.csocket.close()
+
+        ret_code = 0
+        while ret_code == 0:
+            ret_code = transactionUDP(r_socket, r_port, msg_list)
+
+        if ret_code == -1:
+            global TERMINATE
+            TERMINATE = True
+            link_to_self(self.server_address, self.n_port)
+
+def link_to_self(server_address, n_port):
+    client_socket = socket(AF_INET, SOCK_STREAM)
+    client_socket.connect((server_address, n_port))
+    client_socket.send("0".encode())
+    client_socket.close()
+
 def main():
     if len(sys.argv) - 1 == INPUT_NUM:
         req_code = int(sys.argv[1])
     else:
         print("Invalid Arguments: should input " + INPUT_NUM + " parameters")
         quit()
-    
-    
-
-    server_socket = socket(AF_INET, SOCK_STREAM)
-    server_socket.bind(('', 0))
 
     hostname = gethostname()
     ip_address = gethostbyname(hostname)
@@ -77,30 +118,13 @@ def main():
 
     print(prompt)
 
-    server_socket.listen(1)
-
-    msg_list = []
-
     while True:
+        server_socket.listen(1)
         connection_socket, addr = server_socket.accept()
-        cli_req_code = int(connection_socket.recv(1024).decode())
-        if cli_req_code != req_code:
-            connection_socket.send("0".encode())
-            connection_socket.close()
-            continue
-
-        r_socket = find_socket(SOCK_DGRAM)
-        r_port = r_socket.getsockname()[1]
-        print("r_port is {0}".format(r_port))
-        connection_socket.send(str(r_port).encode())
-        connection_socket.close()
-
-        ret_code = 0
-        while ret_code == 0:
-            ret_code = transactionUDP(r_socket, r_port, msg_list)
-
-        if ret_code == -1:
+        if TERMINATE == True:
             break
+        newthread = ClientThread(addr, connection_socket, req_code, ip_address, n_port)
+        newthread.start()
     
     server_socket.close()
 
