@@ -57,7 +57,28 @@ def transactionUDP(r_socket, r_port, msg_list):
     return ret_code
 
 class ClientThread(threading.Thread):
+    '''This is a class for creating client socket thread.
+
+    Attributes:
+    client_address -- the client address
+    client_socket -- the client socket
+    req_code -- the request code
+    server_address -- the server address
+    n_port -- the server listening port number
+    '''
+
     def __init__(self, client_address, client_socket, req_code, server_address, n_port):
+        '''
+        The constructor method
+
+        Parameters:
+        client_address -- the client address
+        client_socket -- the client socket
+        req_code -- the request code
+        server_address -- the server address
+        n_port -- the server listening port number
+        '''
+
         threading.Thread.__init__(self)
         self.csocket = client_socket
         self.req_code = req_code
@@ -65,7 +86,16 @@ class ClientThread(threading.Thread):
         self.server_address = server_address
         self.n_port = n_port
         print("New connection added: ", client_address)
+
     def run(self):
+        '''The main process for the socket
+
+        Parameters:
+        None
+
+        Returns:
+        None
+        '''
         msg = ''
         cli_req_code = int(self.csocket.recv(1024).decode())
         if cli_req_code != self.req_code:
@@ -89,6 +119,16 @@ class ClientThread(threading.Thread):
             link_to_self(self.server_address, self.n_port)
 
 def link_to_self(server_address, n_port):
+    '''Send a request to the server to stop listening
+
+    Parameters:
+    server_address -- the server address
+    n_port -- the server port number
+
+    Returns:
+    None
+    '''
+    
     client_socket = socket(AF_INET, SOCK_STREAM)
     client_socket.connect((server_address, n_port))
     client_socket.send("0".encode())
