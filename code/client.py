@@ -15,14 +15,22 @@ def negotiaitonTCP(server_address, n_port, req_code):
     Returns:
     r_port -- random port number of the transaction
     '''
+    try:
+        client_socket = socket(AF_INET, SOCK_STREAM)
+        client_socket.settimeout(10.0)
+        client_socket.connect((server_address, n_port))
 
-    client_socket = socket(AF_INET, SOCK_STREAM)
-    client_socket.settimeout(10.0)
-    client_socket.connect((server_address, n_port))
-
-    client_socket.send(str(req_code).encode())
-    r_port = int(client_socket.recv(1024).decode())
-    client_socket.close()
+        client_socket.send(str(req_code).encode())
+        r_port = int(client_socket.recv(1024).decode())
+        client_socket.close()
+    except ConnectionRefusedError:
+        sys.stderr.write("Error server_unavailable\n")
+        file = open("client.txt", "a+")
+        try:
+            file.write("Error server_unavailable\n")
+        finally:
+            file.close()
+        sys.exit(1)
     
     return r_port
 
@@ -37,15 +45,23 @@ def transactionUDP(server_address, r_port, msg):
     Returns:
     None 
     '''
+    try:
+        client_socket = socket(AF_INET, SOCK_DGRAM)
+        client_socket.settimeout(10.0)
+        client_socket.sendto("GET".encode(),(server_address, r_port))
+        messages, _ = client_socket.recvfrom(2048)
+        message_list = eval(messages.decode())
+        print('\n'.join(message_list))
 
-    client_socket = socket(AF_INET, SOCK_DGRAM)
-    client_socket.settimeout(10.0)
-    client_socket.sendto("GET".encode(),(server_address, r_port))
-    messages, _ = client_socket.recvfrom(2048)
-    message_list = eval(messages.decode())
-    print('\n'.join(message_list))
-
-    client_socket.sendto(msg.encode(), (server_address, r_port))
+        client_socket.sendto(msg.encode(), (server_address, r_port))
+    except ConnectionRefusedError:
+        sys.stderr.write("Error server_unavailable\n")
+        file = open("client.txt", "a+")
+        try:
+            file.write("Error server_unavailable\n")
+        finally:
+            file.close()
+        sys.exit(1)
 
     input("Press Enter to continue...")
     client_socket.close()
@@ -85,14 +101,19 @@ def main():
         req_code = int(sys.argv[3])
         msg = str(sys.argv[4])
     else:
-        print("Invalid Arguments: should input " + INPUT_NUM + " parameters")
-        quit()
+        sys.stderr.write("Invalid Arguments: should input " + INPUT_NUM + " parameters\n")
+        sys.exit(1)
     
     r_port = negotiaitonTCP(server_address, n_port, req_code)
 
     if r_port == 0:
-        print("Invalid req_code")
-        quit()
+        sys.stderr.write("Invalid req_code\n")
+        file = open("client.txt", "a+")
+        try:
+            file.write("Invalid req_code\n")
+        finally:
+            file.close()
+        sys.exit(2)
     
     transactionUDP(server_address, r_port, msg)
 

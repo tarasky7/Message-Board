@@ -136,7 +136,7 @@ def main():
         req_code = int(sys.argv[1])
     else:
         print("Invalid Arguments: should input " + INPUT_NUM + " parameters")
-        quit()
+        sys.exit(1)
 
     hostname = gethostname()
     ip_address = gethostbyname(hostname)
