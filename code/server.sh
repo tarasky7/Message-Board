@@ -18,7 +18,7 @@
 #java server $1 
 
 #For Python implementation
-python server.py $1
+python3 server.py $1
 
 #For Ruby implementation
 #ruby server.rb $1

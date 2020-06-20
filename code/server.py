@@ -9,9 +9,6 @@ msg_list = []
 
 TERMINATE = False
 
-server_socket = socket(AF_INET, SOCK_STREAM)
-server_socket.bind(('', 0))
-
 def find_socket(sock_type):
     '''Find a valid port number for socket
 
@@ -43,7 +40,7 @@ def transactionUDP(r_socket, r_port, msg_list):
     msg = message.decode()
     ret_code = 0
     if msg == "GET":
-        ret_msg = msg_list.copy()
+        ret_msg = list(msg_list)
         ret_msg.append("NO MSG")
         r_socket.sendto(str(ret_msg).encode(), client_address)
     else:
@@ -143,8 +140,11 @@ def main():
 
     hostname = gethostname()
     ip_address = gethostbyname(hostname)
-    print(f"Hostname: {hostname}")
-    print(f"IP Address: {ip_address}")
+    print("Hostname: {0}".format(hostname))
+    print("IP Address: {0}".format(ip_address))
+
+    server_socket = socket(AF_INET, SOCK_STREAM)
+    server_socket.bind(('', 0))
 
     n_port = server_socket.getsockname()[1]
 

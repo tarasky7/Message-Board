@@ -17,6 +17,7 @@ def negotiaitonTCP(server_address, n_port, req_code):
     '''
 
     client_socket = socket(AF_INET, SOCK_STREAM)
+    client_socket.settimeout(10.0)
     client_socket.connect((server_address, n_port))
 
     client_socket.send(str(req_code).encode())
@@ -38,11 +39,11 @@ def transactionUDP(server_address, r_port, msg):
     '''
 
     client_socket = socket(AF_INET, SOCK_DGRAM)
-
+    client_socket.settimeout(10.0)
     client_socket.sendto("GET".encode(),(server_address, r_port))
     messages, _ = client_socket.recvfrom(2048)
     message_list = eval(messages.decode())
-    print(*message_list, sep = "\n")
+    print('\n'.join(message_list))
 
     client_socket.sendto(msg.encode(), (server_address, r_port))
 
