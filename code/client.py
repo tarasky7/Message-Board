@@ -52,7 +52,7 @@ def transactionUDP(server_address, r_port, msg):
         messages, _ = client_socket.recvfrom(2048)
         message_list = eval(messages.decode())
         print('\n'.join(message_list))
-
+        log_port(r_port, message_list)
         client_socket.sendto(msg.encode(), (server_address, r_port))
     except ConnectionRefusedError:
         sys.stderr.write("Error server_unavailable\n")
@@ -66,7 +66,7 @@ def transactionUDP(server_address, r_port, msg):
     input("Press Enter to continue...")
     client_socket.close()
 
-def log_port(r_port, msg):
+def log_port(r_port, message_list):
     '''Write the line <r_port> to that file with the messages in order
 
     Parameters:
@@ -82,15 +82,11 @@ def log_port(r_port, msg):
     file = open("client.txt", "a+")
 
     try:
-        for line in file:
-            crt_port = line.split(":")[0]
-            if crt_port == r_port:
-                existed = True
-                break
-        
-        if existed == False:
-            next_line = str(r_port) + ": " + str(msg) + "\n"
-            file.write(next_line)
+        next_line = "r_port: " + str(r_port) + "\n"
+        file.write(next_line)
+
+        for msg in message_list:
+            file.write(str(msg) + "\n")
     finally:
         file.close()
 
@@ -116,8 +112,6 @@ def main():
         sys.exit(2)
     
     transactionUDP(server_address, r_port, msg)
-
-    log_port(r_port, msg)
 
 if __name__ == "__main__":
     main()

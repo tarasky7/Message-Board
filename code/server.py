@@ -82,7 +82,7 @@ class ClientThread(threading.Thread):
         self.client_address = client_address
         self.server_address = server_address
         self.n_port = n_port
-        print("New connection added: ", client_address)
+        # print("New connection added: ", client_address)
 
     def run(self):
         '''The main process for the socket
