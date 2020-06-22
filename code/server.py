@@ -140,8 +140,8 @@ def main():
 
     hostname = gethostname()
     ip_address = gethostbyname(hostname)
-    print("Hostname: {0}".format(hostname))
-    print("IP Address: {0}".format(ip_address))
+    # print("Hostname: {0}".format(hostname))
+    # print("IP Address: {0}".format(ip_address))
 
     server_socket = socket(AF_INET, SOCK_STREAM)
     server_socket.bind(('', 0))
