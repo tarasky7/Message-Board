@@ -1,6 +1,5 @@
 # Socket Programming Practice
-This is an Assignment for CS656 Computer Networks at University of Waterloo.
-The goal of this assignment is to gain experience with socket programming and to implement a simple message board with a client and a server.
+This is an assignment and the goal of this assignment is to gain experience with socket programming and to implement a simple message board with a client and a server.
 ## Version
 Python 3.
 ## Instructions
